@@ -117,7 +117,7 @@ namespace Mauordle
                 test.SetBinding(Label.TextProperty, new Binding { Path = "Typed" });
                 mainVStack.Add(test);
                 */
-
+                
                 mainVStack.Add(entry);
                 wordDisplayCreated = true;
             }
@@ -141,6 +141,7 @@ namespace Mauordle
                 IsUpdatingTyped = true;
 
                 UpdateWordsDisplay(Typed, guess);
+                CheckWin();
                 entry.Text = String.Empty;
                 ++guess;
             }
@@ -176,7 +177,8 @@ namespace Mauordle
                 await ReadWords();
             }
             //Shell.Current.DisplayAlert("bogos", FileSystem.Current.AppDataDirectory, "ok");
-
+            //Label test2 = new Label { Text = targetWord };
+            //mainVStack.Add(test2);
 
         }
 
@@ -227,7 +229,7 @@ namespace Mauordle
                     {
                         wordNum = new Random().Next(words.Count); //originally asigned in constructor
                     }
-                    targetWord = words[wordNum];
+                    targetWord = words[wordNum].ToUpper();
                 }
             }
             catch (Exception ex) {
@@ -252,7 +254,23 @@ namespace Mauordle
             }
         }
 
-        
+        private void CheckWin()
+        {
+            if(typed == targetWord)
+            {
+                Label winLabel = new Label
+                {
+                    Text = "You Win!",
+                    FontSize = 90,
+                    HorizontalOptions = LayoutOptions.Center
+                };
+                mainVStack.Insert(0, winLabel);
+                entry.IsEnabled = false;
+            }
+        }
+
+
+
         protected override void OnAppearing()
         {
             base.OnAppearing();
