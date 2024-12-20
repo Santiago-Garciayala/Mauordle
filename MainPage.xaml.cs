@@ -7,12 +7,15 @@ namespace Mauordle
     {
         public const int WORD_NUMBER = 6;
         public const int WORD_LENGTH = 5;
+        private const string WORDS_FILE_NAME = "words.txt";
         private const string URL = "https://raw.githubusercontent.com/DonH-ITS/jsonfiles/main/words.txt";
         private const int WORDS_FILE_LENGTH = 3103;
 
         private Entry entry;
         private int wordNum;
         private string[] words; //TODO use this
+        private string word;
+        private bool wordsFileExists = false;
         private bool wordDisplayCreated = false;
         private bool startFullscreen = false; //mainly for debugging purposes as this will always be true on any release version
         private int guess = 0;
@@ -50,14 +53,14 @@ namespace Mauordle
             InitializeComponent();
 
             BindingContext = this;
-            PopulateWordsCollection();
+            PopulateWordsTypedCollection();
             
-            Random rand = new Random();
-            wordNum = rand.Next(WORDS_FILE_LENGTH);
+            wordNum = new Random().Next(WORDS_FILE_LENGTH);
         }
 
         private void CreateWordDisplay()
         {
+            mainVStack.Loaded += OnMainVSLoaded;
             if (!wordDisplayCreated)
             {
                 for (int i = 0; i < 6; i++)
@@ -110,11 +113,11 @@ namespace Mauordle
                 });
                 entry.TextChanged += Entry_TextChanged;
 
-                
+                /*
                 Label test = new Label();
                 test.SetBinding(Label.TextProperty, new Binding { Path = "Typed" });
                 mainVStack.Add(test);
-                
+                */
 
                 mainVStack.Add(entry);
                 wordDisplayCreated = true;
@@ -144,7 +147,7 @@ namespace Mauordle
             }
         }
 
-        private void PopulateWordsCollection()
+        private void PopulateWordsTypedCollection()
         {
             wordsTyped = new ObservableCollection<ObservableCollection<BindableChar>>();
             for (int i = 0; i < WORD_NUMBER; i++)
@@ -157,10 +160,85 @@ namespace Mauordle
             }
         }
 
-        private string[] GetWords()
+        private async void OnMainVSLoaded(object? sender, EventArgs e)
         {
-            //TODO
-            return new string[2];
+            int i = 0;
+            while (!wordsFileExists && i < 5) { 
+                wordsFileExists = await GetWordsFile();
+                ++i;
+            }
+
+            if (!wordsFileExists) {
+                await Shell.Current.DisplayAlert("Failed to load words list.", "Ensure you are connected to the internet and try again.", "ok");
+                Application.Current.Quit();
+            }
+            else
+            {
+                await ReadWords();
+            }
+            //Shell.Current.DisplayAlert("bogos", FileSystem.Current.AppDataDirectory, "ok");
+
+
+        }
+
+        private async Task<bool> GetWordsFile()
+        {
+            string path = Path.Combine(FileSystem.Current.AppDataDirectory, WORDS_FILE_NAME);
+            if (File.Exists(path))
+                return true;
+
+            HttpClient client = new HttpClient();
+            try
+            {
+                HttpResponseMessage response = await client.GetAsync(URL);
+                if (response.IsSuccessStatusCode)
+                {
+                    using (StreamWriter writer = new StreamWriter(path))
+                    {
+                        string contents = await response.Content.ReadAsStringAsync();
+                        await writer.WriteAsync(contents);
+                    }
+                    return true;
+                }
+                else
+                {
+                    await Shell.Current.DisplayAlert("Error when requesting word data", response.RequestMessage.ToString(), "ok");
+                    return false;
+                }
+            }
+            catch (Exception ex) { 
+                await Shell.Current.DisplayAlert("Error when reading word data", ex.Message, "ok");
+                return false;
+            }
+        }
+
+        private async Task ReadWords()
+        {
+            string path = Path.Combine(FileSystem.Current.AppDataDirectory, WORDS_FILE_NAME);
+            words = new string[WORDS_FILE_LENGTH];
+            try
+            {
+                using (StreamReader reader = new StreamReader(path))
+                {
+                    int i = 0;
+                    while (!reader.EndOfStream)
+                    {
+                        words[i] = reader.ReadLine();
+                        ++i;
+                    }
+                    if(i != WORDS_FILE_LENGTH)
+                    {
+                        wordNum = new Random().Next(i); 
+                    }
+                    word = words[wordNum];
+                }
+            }
+            catch (Exception ex) {
+                File.Delete(path);
+                await Shell.Current.DisplayAlert("Failed to read words file", ex.Message, "ok");
+                Application.Current.Quit();
+            }
+
         }
 
         private void UpdateWords(string str, int index)
@@ -183,7 +261,7 @@ namespace Mauordle
             base.OnSizeAllocated(width, height);
 
             CreateWordDisplay();
-            wordsTyped[0][0].Value = 'b';
+            //wordsTyped[0][0].Value = 'b';
         }
 
         //from: https://stackoverflow.com/questions/76881580/net-6-maui-open-application-in-full-screen-mode-windows
