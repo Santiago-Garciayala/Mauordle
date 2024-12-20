@@ -13,7 +13,7 @@ namespace Mauordle
 
         private Entry entry;
         private int wordNum;
-        private string[] words; //TODO use this
+        private List<string> words; 
         private string targetWord;
         private bool wordsFileExists = false;
         private bool wordDisplayCreated = false;
@@ -140,7 +140,7 @@ namespace Mauordle
             {
                 IsUpdatingTyped = true;
 
-                UpdateWords(Typed, guess);
+                UpdateWordsDisplay(Typed, guess);
                 entry.Text = String.Empty;
                 ++guess;
             }
@@ -214,20 +214,18 @@ namespace Mauordle
         private async Task ReadWords()
         {
             string path = Path.Combine(FileSystem.Current.AppDataDirectory, WORDS_FILE_NAME);
-            words = new string[WORDS_FILE_LENGTH];
+            words = new List<string>();
             try
             {
                 using (StreamReader reader = new StreamReader(path))
                 {
-                    int i = 0;
                     while (!reader.EndOfStream)
                     {
-                        words[i] = reader.ReadLine();
-                        ++i;
+                        words.Add(reader.ReadLine());
                     }
-                    if(i != WORDS_FILE_LENGTH)
+                    if(words.Count != WORDS_FILE_LENGTH)
                     {
-                        wordNum = new Random().Next(i); //originally asigned in constructor
+                        wordNum = new Random().Next(words.Count); //originally asigned in constructor
                     }
                     targetWord = words[wordNum];
                 }
@@ -247,7 +245,7 @@ namespace Mauordle
             }
         }
 
-        private void UpdateWords(string str, int index)
+        private void UpdateWordsDisplay(string str, int index)
         {
             for(int i = 0; i < WORD_LENGTH; ++i){
                 wordsTyped[index][i].Value = str[i];
