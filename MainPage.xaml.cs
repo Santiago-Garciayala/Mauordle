@@ -14,7 +14,7 @@ namespace Mauordle
         private Entry entry;
         private int wordNum;
         private string[] words; //TODO use this
-        private string word;
+        private string targetWord;
         private bool wordsFileExists = false;
         private bool wordDisplayCreated = false;
         private bool startFullscreen = false; //mainly for debugging purposes as this will always be true on any release version
@@ -60,7 +60,6 @@ namespace Mauordle
 
         private void CreateWordDisplay()
         {
-            mainVStack.Loaded += OnMainVSLoaded;
             if (!wordDisplayCreated)
             {
                 for (int i = 0; i < 6; i++)
@@ -228,9 +227,9 @@ namespace Mauordle
                     }
                     if(i != WORDS_FILE_LENGTH)
                     {
-                        wordNum = new Random().Next(i); 
+                        wordNum = new Random().Next(i); //originally asigned in constructor
                     }
-                    word = words[wordNum];
+                    targetWord = words[wordNum];
                 }
             }
             catch (Exception ex) {
@@ -239,6 +238,13 @@ namespace Mauordle
                 Application.Current.Quit();
             }
 
+            if (targetWord.Length != WORD_LENGTH)
+            {
+                File.Delete(path);
+                await Shell.Current.DisplayAlert("Something went wrong when writing the words", "Word length is not " + WORD_LENGTH, "ok");
+                Application.Current.Quit();
+
+            }
         }
 
         private void UpdateWords(string str, int index)
@@ -248,13 +254,15 @@ namespace Mauordle
             }
         }
 
-        /*
+        
         protected override void OnAppearing()
         {
             base.OnAppearing();
 
+            //this does all the file writing and reading stuff to ultimately get the target word
+            mainVStack.Loaded += OnMainVSLoaded;
         }
-        */
+        
 
         protected override void OnSizeAllocated(double width, double height)
         {
