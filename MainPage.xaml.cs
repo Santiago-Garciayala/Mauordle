@@ -3,6 +3,17 @@ using System.Text.RegularExpressions;
 
 namespace Mauordle
 {
+    /*
+     * TODO:
+     * -implement colours
+     * -implement light/dark theme
+     * -add type here animation
+     * -add animation to letters when updating the squares
+     * -add sounds when doing that
+     * -add settings page
+     * -implement saving results
+     * -add results page
+     */
     public partial class MainPage : ContentPage
     {
         public const int WORD_NUMBER = 6;
@@ -12,6 +23,7 @@ namespace Mauordle
         private const int WORDS_FILE_LENGTH = 3103;
 
         private Entry entry;
+        private Border[][] borders; //i coudlve just used a grid but i didnt want to rewrite the whole layout but this probably takes up less memory so who cares
         private int wordNum;
         private List<string> words; 
         private string targetWord;
@@ -62,37 +74,33 @@ namespace Mauordle
         {
             if (!wordDisplayCreated)
             {
+                borders = new Border[WORD_NUMBER][];
                 for (int i = 0; i < 6; i++)
                 {
+                    borders[i] = new Border[WORD_LENGTH];
                     HorizontalStackLayout hsl = new HorizontalStackLayout
                     {
                         HorizontalOptions = LayoutOptions.Center
                     };
                     for (int j = 0; j < 5; j++)
                     {
-                        Label l = new Label
-                        {
-                            FontSize = 60,
-                            HorizontalOptions = LayoutOptions.Center,
-                            VerticalOptions = LayoutOptions.Center
-                        };
+                        Label l = new Label();
+                        l.Style = (Style)Resources["WordLabel"];
 
                         //maui flattens 2D ObservableCOllections when binding for some reason so i have to bind it to wordsTyped[i] directly
                         l.BindingContext = wordsTyped[i];
                         l.SetBinding(Label.TextProperty, new Binding($"[{j}].Value"));
                         
-
-
-                        Border frame = new Border
+                        Border border = new Border
                         {
-                            BackgroundColor = Colors.Green,
                             WidthRequest = this.Height * .12,
                             HeightRequest = this.Height * .12,
                             Content = l
-
                         };
+                        border.Style = (Style)Resources["DefaultBorder"];
 
-                        hsl.Add(frame);
+                        hsl.Add(border);
+                        borders[i][j] = border;
                     }
                     mainVStack.Add(hsl);
                 }
@@ -177,8 +185,8 @@ namespace Mauordle
                 await ReadWords();
             }
             //Shell.Current.DisplayAlert("bogos", FileSystem.Current.AppDataDirectory, "ok");
-            //Label test2 = new Label { Text = targetWord };
-            //mainVStack.Add(test2);
+            Label test2 = new Label { Text = targetWord };
+            mainVStack.Add(test2);
 
         }
 
@@ -249,8 +257,28 @@ namespace Mauordle
 
         private void UpdateWordsDisplay(string str, int index)
         {
+            //FIX: doesnt work if the chars repeating are the ones the user typed, only the ones for the target word
+            Dictionary<char,int> repeatsInTarget = GetRepeatChars(targetWord); //probably inefficient if it was a longer string but who cares
+            Dictionary<char,int> repeatsInTyped = GetRepeatChars(str); //idk if this is how i should do it, ill fix this later
+
             for(int i = 0; i < WORD_LENGTH; ++i){
                 wordsTyped[index][i].Value = str[i];
+
+                if (str[i] == targetWord[i])
+                {
+                    borders[index][i].Style = (Style)Resources["CorrectBorder"];
+                }else if (targetWord.Contains(str[i]) && repeatsInTarget.ContainsKey(str[i]))
+                {
+                    if (repeatsInTarget[str[i]] > 0)
+                    {
+                        borders[index][i].Style = (Style)Resources["SemiCorrectBorder"];
+                        --repeatsInTarget[str[i]];
+                    }
+                    
+                }else if (targetWord.Contains(str[i]))
+                {
+                    borders[index][i].Style = (Style)Resources["SemiCorrectBorder"];
+                }
             }
         }
 
@@ -267,6 +295,29 @@ namespace Mauordle
                 mainVStack.Insert(0, winLabel);
                 entry.IsEnabled = false;
             }
+        }
+
+        private Dictionary<char,int> GetRepeatChars(string str)
+        {
+            Dictionary<char, int> count = new Dictionary<char, int>();
+
+            foreach (char c in str)
+            {
+                if(count.ContainsKey(c))
+                    count[c]++;
+                else
+                    count[c] = 1;
+            }
+
+            Dictionary<char,int> repeatChars = new Dictionary<char,int>();
+            
+            foreach (KeyValuePair<char,int> k in count)
+            {
+                if(k.Value > 1)
+                    repeatChars[k.Key] = k.Value;
+            }
+
+            return repeatChars;
         }
 
 
