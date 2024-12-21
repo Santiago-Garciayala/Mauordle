@@ -257,9 +257,7 @@ namespace Mauordle
 
         private void UpdateWordsDisplay(string str, int index)
         {
-            //FIX: doesnt work if the chars repeating are the ones the user typed, only the ones for the target word
-            Dictionary<char,int> repeatsInTarget = GetRepeatChars(targetWord); //probably inefficient if it was a longer string but who cares
-            Dictionary<char,int> repeatsInTyped = GetRepeatChars(str); //idk if this is how i should do it, ill fix this later
+            Dictionary<char,int> charOccurrences = GetCharOccurrences(targetWord); //probably inefficient if it was a longer string but who cares
 
             for(int i = 0; i < WORD_LENGTH; ++i){
                 wordsTyped[index][i].Value = str[i];
@@ -267,17 +265,18 @@ namespace Mauordle
                 if (str[i] == targetWord[i])
                 {
                     borders[index][i].Style = (Style)Resources["CorrectBorder"];
-                }else if (targetWord.Contains(str[i]) && repeatsInTarget.ContainsKey(str[i]))
+                    --charOccurrences[str[i]];
+                }
+            }
+
+            for (int i = 0; i < WORD_LENGTH; i++) {
+                if (targetWord.Contains(str[i]))
                 {
-                    if (repeatsInTarget[str[i]] > 0)
+                    if (charOccurrences[str[i]] > 0 && str[i] != targetWord[i])
                     {
                         borders[index][i].Style = (Style)Resources["SemiCorrectBorder"];
-                        --repeatsInTarget[str[i]];
+                        --charOccurrences[str[i]];
                     }
-                    
-                }else if (targetWord.Contains(str[i]))
-                {
-                    borders[index][i].Style = (Style)Resources["SemiCorrectBorder"];
                 }
             }
         }
@@ -297,17 +296,24 @@ namespace Mauordle
             }
         }
 
-        private Dictionary<char,int> GetRepeatChars(string str)
+        private Dictionary<char, int> GetCharOccurrences(string str)
         {
             Dictionary<char, int> count = new Dictionary<char, int>();
 
             foreach (char c in str)
             {
-                if(count.ContainsKey(c))
+                if (count.ContainsKey(c))
                     count[c]++;
                 else
                     count[c] = 1;
             }
+            return count;
+        }
+
+        //unused function
+        private Dictionary<char,int> GetRepeatChars(string str)
+        {
+            Dictionary<char, int> count = GetCharOccurrences(str);
 
             Dictionary<char,int> repeatChars = new Dictionary<char,int>();
             
