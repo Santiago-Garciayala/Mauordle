@@ -153,6 +153,11 @@ namespace Mauordle
                 entry.Text = String.Empty;
                 ++guess;
             }
+
+            if(guess >= WORD_NUMBER)
+            {
+                entry.IsEnabled = false;
+            }
         }
 
         private void PopulateWordsTypedCollection()
