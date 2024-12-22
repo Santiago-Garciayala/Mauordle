@@ -20,6 +20,9 @@
             <Style x:Key="SemiCorrectBorder" TargetType="Border" BasedOn="{StaticResource DefaultBorder}">
                 <Setter Property="BackgroundColor" Value="#ffdd55"/>
             </Style>
+            <Style x:Key="AnimationBorder" TargetType="Border" BasedOn="{StaticResource DefaultBorder}">
+                <Setter Property="BackgroundColor" Value="#ff2222"/>
+            </Style>
 
             <Style x:Key="WordLabel" TargetType="Label">
                 <Setter Property="FontSize" Value="60"/>

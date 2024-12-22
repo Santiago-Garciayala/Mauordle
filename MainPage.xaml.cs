@@ -1,11 +1,13 @@
-﻿using System.Collections.ObjectModel;
+﻿using Microsoft.UI.Xaml;
+using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
+using System.Timers;
 
 namespace Mauordle
 {
     /*
      * TODO:
-     * -implement colours
+     * -implement colours DONE
      * -implement light/dark theme
      * -add type here animation
      * -add animation to letters when updating the squares
@@ -129,6 +131,7 @@ namespace Mauordle
                 mainVStack.Add(entry);
                 wordDisplayCreated = true;
             }
+            DoTypeHereAnimation(2);
         }
 
         private void Entry_TextChanged(object? sender, TextChangedEventArgs e)
@@ -329,6 +332,54 @@ namespace Mauordle
             }
 
             return repeatChars;
+        }
+
+        private void DoTypeHereAnimation(int iterations)
+        {
+            IDispatcherTimer timer = new DispatcherTimer(); //fix
+            int seqIndex = 0;
+            int[][] sequence = {
+                [1,5],
+                [1,2,4,5],
+                [2,4],
+                [2,3,4],
+                [2,3,4],
+                [3]
+            };
+
+            timer.Elapsed += (s, e) =>
+            {
+                if (seqIndex > 0)
+                {
+                    for (int i = 0; i < sequence[(seqIndex - 1) % WORD_NUMBER].Length; ++i)
+                    {
+                        Dispatcher.Dispatch(() =>
+                        {
+                            borders[(seqIndex - 1) % WORD_NUMBER][i].Style = (Style)Resources["DefaultBorder"];
+                        });
+                        
+                    }
+                }
+                for(int i = 0; i < sequence[seqIndex % WORD_NUMBER].Length; ++i)
+                {
+                    Dispatcher.Dispatch(() =>
+                    {
+                        borders[seqIndex % WORD_NUMBER][i].Style = (Style)Resources["AnimationBorder"];
+                    });
+                }
+
+                ++seqIndex;
+
+                if (seqIndex == iterations * WORD_NUMBER)
+                {
+                    timer.Stop();
+                    return;
+                }
+            };
+
+            timer.Start();
+
+            
         }
 
 
