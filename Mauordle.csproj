@@ -57,12 +57,15 @@
 
 	<ItemGroup>
 	  <None Remove="Resources\Images\settings.png" />
+	  <None Remove="Resources\Raw\metal-pipe-falling-sound-effect.mp3" />
+	  <None Remove="Resources\Raw\pizza-tower-taunt.mp3" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
+		<PackageReference Include="Plugin.Maui.Audio" Version="3.0.1" />
 	</ItemGroup>
 
 	<ItemGroup>

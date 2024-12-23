@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
 using System.Timers;
+using Plugin.Maui.Audio;
 
 namespace Mauordle
 {
@@ -33,6 +34,8 @@ namespace Mauordle
         private bool startFullscreen = false; //mainly for debugging purposes as this will always be true on any release version
         private int guess = 0;
         private ObservableCollection<ObservableCollection<BindableChar>> wordsTyped;
+        private IAudioPlayer metalPipeFalling;
+        private IAudioPlayer pizzaTowerTaunt;
         private bool isUpdatingTyped = false;  //used for UpdateWords
         public bool IsUpdatingTyped { 
             get => isUpdatingTyped;
@@ -156,7 +159,10 @@ namespace Mauordle
                 IsUpdatingTyped = true;
 
                 UpdateWordsDisplay(Typed, guess);
-                CheckWin();
+
+                if (!CheckWin()) //CheckWin does its thing inside the method, the return val is just for the sound effect
+                    metalPipeFalling.Play();
+                
                 entry.Text = String.Empty;
                 ++guess;
             }
@@ -196,6 +202,13 @@ namespace Mauordle
             {
                 await ReadWords();
             }
+
+            if(metalPipeFalling == null)
+                metalPipeFalling = AudioManager.Current.CreatePlayer(await FileSystem.OpenAppPackageFileAsync("metal-pipe-falling-sound-effect.mp3"));
+
+            if (pizzaTowerTaunt == null)
+                pizzaTowerTaunt = AudioManager.Current.CreatePlayer(await FileSystem.OpenAppPackageFileAsync("pizza-tower-taunt.mp3"));
+
             //Shell.Current.DisplayAlert("bogos", FileSystem.Current.AppDataDirectory, "ok");
             Label test2 = new Label { Text = targetWord };
             mainVStack.Add(test2);
@@ -293,7 +306,7 @@ namespace Mauordle
             }
         }
 
-        private void CheckWin()
+        private bool CheckWin()
         {
             if(typed == targetWord)
             {
@@ -305,7 +318,13 @@ namespace Mauordle
                 };
                 mainVStack.Insert(0, winLabel);
                 entry.IsEnabled = false;
+
+                pizzaTowerTaunt.Play();
+
+                return true;
             }
+
+            return false;
         }
 
         private Dictionary<char, int> GetCharOccurrences(string str)
