@@ -33,6 +33,10 @@
         </ResourceDictionary>
     </ContentPage.Resources>
 
+    <ContentPage.ToolbarItems>
+        <ToolbarItem IconImageSource="settings.png" Clicked="OpenSettingsPage"/>
+    </ContentPage.ToolbarItems>
+
     <ScrollView>
         <VerticalStackLayout x:Name="mainVStack" Margin="50">
             

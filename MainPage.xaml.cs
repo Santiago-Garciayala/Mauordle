@@ -1,5 +1,4 @@
-﻿using Microsoft.UI.Xaml;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
 using System.Timers;
 
@@ -67,8 +66,13 @@ namespace Mauordle
             InitializeComponent();
 
             BindingContext = this;
-            PopulateWordsTypedCollection();
-            
+
+            if(wordsTyped == null)
+                PopulateWordsTypedCollection();
+
+            //this does all the file writing and reading stuff to ultimately get the target word
+            mainVStack.Loaded += OnMainVSLoaded;
+
             wordNum = new Random().Next(WORDS_FILE_LENGTH);
         }
 
@@ -131,7 +135,7 @@ namespace Mauordle
                 mainVStack.Add(entry);
                 wordDisplayCreated = true;
             }
-            DoTypeHereAnimation(2);
+            //DoTypeHereAnimation(2);
         }
 
         private void Entry_TextChanged(object? sender, TextChangedEventArgs e)
@@ -336,7 +340,7 @@ namespace Mauordle
 
         private void DoTypeHereAnimation(int iterations)
         {
-            IDispatcherTimer timer = new DispatcherTimer(); //fix
+            System.Timers.Timer timer = new System.Timers.Timer(); //fix
             int seqIndex = 0;
             int[][] sequence = {
                 [1,5],
@@ -382,14 +386,14 @@ namespace Mauordle
             
         }
 
-
+        private async void OpenSettingsPage(object sender, EventArgs args)
+        {
+            await Navigation.PushAsync(new SettingsPage());
+        }
 
         protected override void OnAppearing()
         {
             base.OnAppearing();
-
-            //this does all the file writing and reading stuff to ultimately get the target word
-            mainVStack.Loaded += OnMainVSLoaded;
         }
         
 
