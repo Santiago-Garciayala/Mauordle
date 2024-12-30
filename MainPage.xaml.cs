@@ -36,6 +36,7 @@ namespace Mauordle
         private ObservableCollection<ObservableCollection<BindableChar>> wordsTyped;
         private IAudioPlayer metalPipeFalling;
         private IAudioPlayer pizzaTowerTaunt;
+        private IAudioPlayer spongebob;
         private bool isUpdatingTyped = false;  //used for UpdateWords
         public bool IsUpdatingTyped { 
             get => isUpdatingTyped;
@@ -160,16 +161,19 @@ namespace Mauordle
 
                 UpdateWordsDisplay(Typed, guess);
 
-                if (!CheckWin()) //CheckWin does its thing inside the method, the return val is just for the sound effect
-                    metalPipeFalling.Play();
+                bool won = CheckWin(); //CheckWin does its thing inside the method, the return val is just for the sound effect
                 
                 entry.Text = String.Empty;
                 ++guess;
+
+                if(!won && guess != WORD_NUMBER)
+                    metalPipeFalling.Play();
             }
 
-            if(guess >= WORD_NUMBER)
+            if (guess >= WORD_NUMBER)
             {
                 entry.IsEnabled = false;
+                spongebob.Play();
             }
         }
 
@@ -208,6 +212,9 @@ namespace Mauordle
 
             if (pizzaTowerTaunt == null)
                 pizzaTowerTaunt = AudioManager.Current.CreatePlayer(await FileSystem.OpenAppPackageFileAsync("pizza-tower-taunt.mp3"));
+
+            if(spongebob == null)
+                spongebob = AudioManager.Current.CreatePlayer(await FileSystem.OpenAppPackageFileAsync("spongebob-sad.mp3"));
 
             //Shell.Current.DisplayAlert("bogos", FileSystem.Current.AppDataDirectory, "ok");
             Label test2 = new Label { Text = targetWord };
