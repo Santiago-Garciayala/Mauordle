@@ -12,21 +12,24 @@ namespace Mauordle
      * -add type here animation
      * -add animation to letters when updating the squares
      * -add sounds when doing that
-     * -add settings page
+     * -add settings page DONE
      * -implement saving results
      * -add results page
      * -add window resized function
      */
     public partial class MainPage : ContentPage
     {
+        //constants
         public const int WORD_NUMBER = 6;
         public const int WORD_LENGTH = 5;
         private const string WORDS_FILE_NAME = "words.txt";
         private const string URL = "https://raw.githubusercontent.com/DonH-ITS/jsonfiles/main/words.txt";
         private const int WORDS_FILE_LENGTH = 3103;
 
+        //static variables
         public static MainPage Instance { get; private set; }
-
+        
+        //properties
         private Entry entry;
         private Border[][] borders; //i coudlve just used a grid but i didnt want to rewrite the whole layout but this probably takes up less memory so who cares
         private int wordNum;
@@ -35,6 +38,7 @@ namespace Mauordle
         private bool wordsFileExists = false;
         private bool wordDisplayCreated = false;
         private bool startFullscreen = false; //mainly for debugging purposes as this will always be true on any release version
+        private bool won = false;
         private int guess = 0;
         private ObservableCollection<ObservableCollection<BindableChar>> wordsTyped;
         private IAudioPlayer metalPipeFalling;
@@ -89,6 +93,12 @@ namespace Mauordle
                 }
             }
         }
+        private bool updatingSize = false;
+
+        /////////////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////
 
         public MainPage()
         {
@@ -100,8 +110,8 @@ namespace Mauordle
             if(wordsTyped == null)
                 PopulateWordsTypedCollection();
 
-            //this does all the file writing and reading stuff to ultimately get the target word
-            mainVStack.Loaded += OnMainVSLoaded;
+            mainVStack.Loaded += OnMainVSLoaded; //this does all the file writing and reading stuff to ultimately get the target word
+            this.LayoutChanged += ResizeElements;
 
             wordNum = new Random().Next(WORDS_FILE_LENGTH);
 
@@ -113,14 +123,14 @@ namespace Mauordle
             if (!wordDisplayCreated)
             {
                 borders = new Border[WORD_NUMBER][];
-                for (int i = 0; i < 6; i++)
+                for (int i = 0; i < WORD_NUMBER; i++)
                 {
                     borders[i] = new Border[WORD_LENGTH];
                     HorizontalStackLayout hsl = new HorizontalStackLayout
                     {
                         HorizontalOptions = LayoutOptions.Center
                     };
-                    for (int j = 0; j < 5; j++)
+                    for (int j = 0; j < WORD_LENGTH; j++)
                     {
                         Label l = new Label();
                         l.Style = (Style)Resources["WordLabel"];
@@ -189,7 +199,7 @@ namespace Mauordle
 
                 UpdateWordsDisplay(Typed, guess);
 
-                bool won = CheckWin(); //CheckWin does its thing inside the method, the return val is just for the sound effect
+                won = CheckWin(); //CheckWin does its thing inside the method, the return val is just for the sound effect
                 
                 entry.Text = String.Empty;
                 ++guess;
@@ -198,7 +208,7 @@ namespace Mauordle
                     metalPipeFalling.Play();
             }
 
-            if (guess >= WORD_NUMBER)
+            if (guess >= WORD_NUMBER && !won)
             {
                 entry.IsEnabled = false;
                 spongebob.Play();
@@ -468,6 +478,25 @@ namespace Mauordle
 
             CreateWordDisplay();
             //wordsTyped[0][0].Value = 'b';
+        }
+
+        protected void ResizeElements(object sender, EventArgs e)
+        {
+            if (wordDisplayCreated && !updatingSize)
+            {
+                updatingSize = true;
+                for (int i = 0; i < WORD_NUMBER; ++i)
+                {
+                    for (int j = 0; j < WORD_LENGTH; ++j)
+                    {
+                        borders[i][j].WidthRequest = this.Width * .072;
+                        borders[i][j].HeightRequest = this.Width * .072;
+                    }
+                }
+
+                entry.WidthRequest = this.Width * .08;
+                updatingSize = false;
+            }
         }
 
         //from: https://stackoverflow.com/questions/76881580/net-6-maui-open-application-in-full-screen-mode-windows
