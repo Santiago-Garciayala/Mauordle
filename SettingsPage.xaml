@@ -6,7 +6,19 @@
     <VerticalStackLayout>
         <Label 
             Text="Settings"
+            FontSize="Header"
             VerticalOptions="Center" 
             HorizontalOptions="Center" />
+        <Label
+            Text="Volume"
+            FontSize="Subtitle"
+            VerticalOptions="Center" 
+            HorizontalOptions="Center" />
+        <Slider
+            x:Name="volumeSlider"
+            Value="{Binding Volume}"
+            ValueChanged="volumeSlider_ValueChanged"
+            VerticalOptions="Center" 
+            HorizontalOptions="Center"/>
     </VerticalStackLayout>
 </ContentPage>

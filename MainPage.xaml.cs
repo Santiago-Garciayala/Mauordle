@@ -15,6 +15,7 @@ namespace Mauordle
      * -add settings page
      * -implement saving results
      * -add results page
+     * -add window resized function
      */
     public partial class MainPage : ContentPage
     {
@@ -23,6 +24,8 @@ namespace Mauordle
         private const string WORDS_FILE_NAME = "words.txt";
         private const string URL = "https://raw.githubusercontent.com/DonH-ITS/jsonfiles/main/words.txt";
         private const int WORDS_FILE_LENGTH = 3103;
+
+        public static MainPage Instance { get; private set; }
 
         private Entry entry;
         private Border[][] borders; //i coudlve just used a grid but i didnt want to rewrite the whole layout but this probably takes up less memory so who cares
@@ -37,7 +40,29 @@ namespace Mauordle
         private IAudioPlayer metalPipeFalling;
         private IAudioPlayer pizzaTowerTaunt;
         private IAudioPlayer spongebob;
-        private bool isUpdatingTyped = false;  //used for UpdateWords
+        private double volume;
+        public double Volume
+        {
+            get => volume;
+            set
+            {
+                if (volume != value)
+                {
+                    volume = value;
+                    OnPropertyChanged(nameof(Volume));
+
+                    Preferences.Set("volume", value);
+
+                    if(metalPipeFalling != null)
+                        metalPipeFalling.Volume = value;
+                    if(pizzaTowerTaunt != null)
+                        pizzaTowerTaunt.Volume = value;
+                    if(spongebob != null)
+                        spongebob.Volume = value;
+                }
+            }
+        }
+        private bool isUpdatingTyped = false;  //used for UpdateWordsDisplay
         public bool IsUpdatingTyped { 
             get => isUpdatingTyped;
             set
@@ -70,6 +95,7 @@ namespace Mauordle
             InitializeComponent();
 
             BindingContext = this;
+            Instance = this;
 
             if(wordsTyped == null)
                 PopulateWordsTypedCollection();
@@ -78,6 +104,8 @@ namespace Mauordle
             mainVStack.Loaded += OnMainVSLoaded;
 
             wordNum = new Random().Next(WORDS_FILE_LENGTH);
+
+            Volume = Preferences.Get("volume", 1.0);
         }
 
         private void CreateWordDisplay()
@@ -207,15 +235,23 @@ namespace Mauordle
                 await ReadWords();
             }
 
-            if(metalPipeFalling == null)
+            if (metalPipeFalling == null)
+            {
                 metalPipeFalling = AudioManager.Current.CreatePlayer(await FileSystem.OpenAppPackageFileAsync("metal-pipe-falling-sound-effect.mp3"));
+                metalPipeFalling.Volume = Volume;
+            }
 
             if (pizzaTowerTaunt == null)
+            {
                 pizzaTowerTaunt = AudioManager.Current.CreatePlayer(await FileSystem.OpenAppPackageFileAsync("pizza-tower-taunt.mp3"));
+                pizzaTowerTaunt.Volume = Volume;
+            }
 
-            if(spongebob == null)
+            if (spongebob == null)
+            {
                 spongebob = AudioManager.Current.CreatePlayer(await FileSystem.OpenAppPackageFileAsync("spongebob-sad.mp3"));
-
+                spongebob.Volume = Volume;
+            }
             //Shell.Current.DisplayAlert("bogos", FileSystem.Current.AppDataDirectory, "ok");
             Label test2 = new Label { Text = targetWord };
             mainVStack.Add(test2);
@@ -349,6 +385,7 @@ namespace Mauordle
         }
 
         //unused function
+        /*
         private Dictionary<char,int> GetRepeatChars(string str)
         {
             Dictionary<char, int> count = GetCharOccurrences(str);
@@ -363,6 +400,7 @@ namespace Mauordle
 
             return repeatChars;
         }
+        */
 
         private void DoTypeHereAnimation(int iterations)
         {
@@ -417,11 +455,12 @@ namespace Mauordle
             await Navigation.PushAsync(new SettingsPage());
         }
 
+        /*
         protected override void OnAppearing()
         {
             base.OnAppearing();
         }
-        
+        */
 
         protected override void OnSizeAllocated(double width, double height)
         {
