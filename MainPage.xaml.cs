@@ -12,8 +12,7 @@ namespace Mauordle
      * -implement colours DONE
      * -implement light/dark theme
      * -add type here animation
-     * -add animation to letters when updating the squares
-     * -add sounds when doing that
+     * -add animation to letters when updating the squares DONE
      * -add settings page DONE
      * -implement saving results
      * -add results page
@@ -194,7 +193,7 @@ namespace Mauordle
             //DoTypeHereAnimation(2);
         }
 
-        private void Entry_TextChanged(object? sender, TextChangedEventArgs e)
+        private async void Entry_TextChanged(object? sender, TextChangedEventArgs e)
         {
             if (IsUpdatingTyped)
             {
@@ -211,7 +210,7 @@ namespace Mauordle
             {
                 IsUpdatingTyped = true;
 
-                UpdateWordsDisplay(Typed, guess);
+                await UpdateWordsDisplay(Typed, guess);
 
                 won = CheckWin(); //CheckWin does its thing inside the method, the return val is just for the sound effect
                 
@@ -261,7 +260,7 @@ namespace Mauordle
 
             if (metalPipeFalling == null)
             {
-                metalPipeFalling = AudioManager.Current.CreatePlayer(await FileSystem.OpenAppPackageFileAsync("metal-pipe-falling-sound-effect.mp3"));
+                metalPipeFalling = AudioManager.Current.CreatePlayer(await FileSystem.OpenAppPackageFileAsync("metal-pipe-lowered-vol.mp3"));
                 metalPipeFalling.Volume = Volume;
             }
 
@@ -347,16 +346,17 @@ namespace Mauordle
             }
         }
 
-        private void UpdateWordsDisplay(string str, int index)
+        private async Task UpdateWordsDisplay(string str, int index)
         {
             Dictionary<char,int> charOccurrences = GetCharOccurrences(targetWord); //probably inefficient if it was a longer string but who cares
+            int[] currentRowStatuses = new int[WORD_LENGTH];
 
             for(int i = 0; i < WORD_LENGTH; ++i){
                 wordsTyped[index][i].Value = str[i];
 
                 if (str[i] == targetWord[i])
                 {
-                    borders[index][i].Style = (Style)Resources["CorrectBorder"];
+                    currentRowStatuses[i] = 1;
                     --charOccurrences[str[i]];
                 }
             }
@@ -366,10 +366,26 @@ namespace Mauordle
                 {
                     if (charOccurrences[str[i]] > 0 && str[i] != targetWord[i])
                     {
-                        borders[index][i].Style = (Style)Resources["SemiCorrectBorder"];
+                        currentRowStatuses[i] = 2;
                         --charOccurrences[str[i]];
                     }
                 }
+            }
+
+            //do animation and change the styles
+            for (int i = 0; i < WORD_LENGTH; i++)
+            {
+                await borders[index][i].ScaleTo(1.4, 0);
+                await borders[index][i].RotateTo(30, 0);
+
+                if (currentRowStatuses[i] == 1)
+                    borders[index][i].Style = (Style)Resources["CorrectBorder"];
+
+                if (currentRowStatuses[i] == 2)
+                    borders[index][i].Style = (Style)Resources["SemiCorrectBorder"];
+
+                borders[index][i].ScaleTo(1, 300);
+                borders[index][i].RotateTo(0, 300);
             }
         }
 

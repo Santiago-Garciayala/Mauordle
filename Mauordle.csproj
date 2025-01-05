@@ -59,6 +59,7 @@
 	  <None Remove="Resources\Images\settings.png" />
 	  <None Remove="Resources\Raw\bonk.mp3" />
 	  <None Remove="Resources\Raw\metal-pipe-falling-sound-effect.mp3" />
+	  <None Remove="Resources\Raw\metal-pipe-lowered-vol.mp3" />
 	  <None Remove="Resources\Raw\pizza-tower-taunt.mp3" />
 	  <None Remove="Resources\Raw\spongebob-sad.mp3" />
 	</ItemGroup>
