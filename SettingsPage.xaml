@@ -5,6 +5,7 @@
              Title="">
     <VerticalStackLayout>
         <Label 
+            x:Name="settingsLabel"
             Text="Settings"
             FontSize="Header"
             VerticalOptions="Center" 

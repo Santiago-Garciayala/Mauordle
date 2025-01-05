@@ -11,7 +11,11 @@ public partial class SettingsPage : ContentPage
 		BindingContext = MainPage.Instance;
 
 		volumeSlider.Loaded += initBonk;
-    }
+
+#if ANDROID
+		settingsLabel.FontSize = 40;
+#endif
+	}
 
     private void volumeSlider_ValueChanged(object sender, ValueChangedEventArgs e)
     {

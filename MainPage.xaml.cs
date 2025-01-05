@@ -7,6 +7,8 @@ namespace Mauordle
 {
     /*
      * TODO:
+     * -FIX CROSS PLATFORM SIZING
+     * 
      * -implement colours DONE
      * -implement light/dark theme
      * -add type here animation
@@ -15,7 +17,8 @@ namespace Mauordle
      * -add settings page DONE
      * -implement saving results
      * -add results page
-     * -add window resized function
+     * -add window resized function DONE
+     * -FIX font resizing not working when un-maximizing window
      */
     public partial class MainPage : ContentPage
     {
@@ -28,7 +31,12 @@ namespace Mauordle
 
         //static variables
         public static MainPage Instance { get; private set; }
-        
+
+        //platform specific variables, default is android
+        private double INITIAL_BORDER_WIDTH_MULTIPLIER = 0.08;
+        private double INITIAL_ENTRY_WIDTH_MULTIPLIER = 0.3;
+        private int WIN_FONT_SIZE = 50;
+
         //properties
         private Entry entry;
         private Border[][] borders; //i coudlve just used a grid but i didnt want to rewrite the whole layout but this probably takes up less memory so who cares
@@ -104,6 +112,12 @@ namespace Mauordle
         {
             InitializeComponent();
 
+#if (WINDOWS || MACCATALYST)
+            INITIAL_BORDER_WIDTH_MULTIPLIER = 0.12;
+            INITIAL_ENTRY_WIDTH_MULTIPLIER = 0.15;
+            WIN_FONT_SIZE = 90;
+#endif
+
             BindingContext = this;
             Instance = this;
 
@@ -141,8 +155,8 @@ namespace Mauordle
                         
                         Border border = new Border
                         {
-                            WidthRequest = this.Height * .12,
-                            HeightRequest = this.Height * .12,
+                            WidthRequest = this.Height * INITIAL_BORDER_WIDTH_MULTIPLIER,
+                            HeightRequest = this.Height * INITIAL_BORDER_WIDTH_MULTIPLIER,
                             Content = l
                         };
                         border.Style = (Style)Resources["DefaultBorder"];
@@ -155,7 +169,7 @@ namespace Mauordle
                 entry = new Entry
                 {
                     Margin = 20,
-                    WidthRequest = this.Width * .15,
+                    WidthRequest = this.Width * INITIAL_ENTRY_WIDTH_MULTIPLIER,
                     HorizontalOptions = LayoutOptions.Center
                 };
                 entry.SetBinding(Entry.TextProperty, new Binding { 
@@ -366,7 +380,7 @@ namespace Mauordle
                 Label winLabel = new Label
                 {
                     Text = "You Win!",
-                    FontSize = 90,
+                    FontSize = WIN_FONT_SIZE,
                     HorizontalOptions = LayoutOptions.Center
                 };
                 mainVStack.Insert(0, winLabel);
@@ -491,6 +505,10 @@ namespace Mauordle
                     {
                         borders[i][j].WidthRequest = this.Width * .072;
                         borders[i][j].HeightRequest = this.Width * .072;
+
+                        Label l = (Label)borders[i][j].Content;
+                        int lFontSize = (int)Math.Round(borders[i][j].Width * 0.5);
+                        l.FontSize = lFontSize; //FIX THIS NOT SIZING PROPERLY WHEN UN-MAXIMIZING WINDOW
                     }
                 }
 
