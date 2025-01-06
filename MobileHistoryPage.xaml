@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Mauordle.MobileHistoryPage"
+             xmlns:controls="clr-namespace:Mauordle.Controls"
+             Title="">
+    <ContentPage.Resources>
+
+        <DataTemplate x:Key="SuccessTemplate">
+            <Border
+                Margin="3" 
+                StrokeShape="RoundRectangle 20">
+                <Grid 
+                    RowDefinitions="*,Auto,Auto" 
+                    ColumnDefinitions="Auto"
+                    Padding="7"
+                    BackgroundColor="{StaticResource CorrectColour}">
+
+                    <Label 
+                        Text="{Binding Word, StringFormat='Word: {0}'}"
+                        Grid.Row="0"
+                        FontSize="40"/>
+                    <Label 
+                        Text="{Binding Guesses, StringFormat='Guesses: {0}'}"
+                        Grid.Row="1"
+                        FontSize="20"/>
+                    <Label 
+                        Text="{Binding TimeFinished, StringFormat='Finished on: {0}'}"
+                        Grid.Row="2"
+                        FontSize="20"/>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="FailedTemplate">
+            <Border
+                Margin="3"
+                StrokeShape="RoundRectangle 20">
+                <Grid 
+                    RowDefinitions="*,Auto,Auto" 
+                    ColumnDefinitions="Auto"
+                    Padding="7"
+                    BackgroundColor="{StaticResource WrongColour}">
+
+                    <Label 
+                        Text="{Binding Word, StringFormat='Word: {0}'}"
+                        Grid.Row="0"
+                        FontSize="40"/>
+                    <Label 
+                        Text="{Binding Guesses, StringFormat='Guesses: {0}'}"
+                        Grid.Row="1"
+                        FontSize="20"/>
+                    <Label 
+                        Text="{Binding TimeFinished, StringFormat='Finished on: {0}'}"
+                        Grid.Row="2"
+                        FontSize="20"/>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <controls:SuccessTemplateSelector 
+            x:Key="Selector"
+            Success="{StaticResource SuccessTemplate}"
+            Failed="{StaticResource FailedTemplate}"
+            />
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,*">
+        <Label 
+            Text="History"
+            FontSize="40"
+            VerticalOptions="Center" 
+            HorizontalOptions="Center" 
+            Grid.Row="0"/>
+
+        <CollectionView 
+            ItemsSource="{Binding History}"
+            ItemTemplate="{StaticResource Selector}"
+            VerticalOptions="FillAndExpand"
+            Grid.Row="1"/>
+    </Grid>
+</ContentPage>

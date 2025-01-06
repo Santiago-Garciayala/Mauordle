@@ -12,7 +12,7 @@ public partial class SettingsPage : ContentPage
 
 		volumeSlider.Loaded += initBonk;
 
-#if ANDROID
+#if (ANDROID || IOS)
 		settingsLabel.FontSize = 40;
 #endif
 	}

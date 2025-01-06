@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace Mauordle;
 
-public partial class HistoryPage : ContentPage
+public partial class DesktopHistoryPage : ContentPage
 {
 	private ObservableCollection<Attempt> _history;
     public ObservableCollection<Attempt> History
@@ -18,16 +18,12 @@ public partial class HistoryPage : ContentPage
             }
         }
     }
-    public HistoryPage()
+    public DesktopHistoryPage()
 	{
 		InitializeComponent();
 
 		BindingContext = this;
 		this.Loaded += OnHistoryPageLoaded;
-
-#if ANDROID
-        titleLabel.FontSize = 40;
-#endif
     }
 
     private async void OnHistoryPageLoaded(object sender, EventArgs e)

@@ -210,10 +210,12 @@ namespace Mauordle
 
             Typed = output.ToUpper();
 
+            /*
             if(Typed.Length > WORD_LENGTH)
             {
                 Typed = Typed.Substring(0, WORD_LENGTH);
             }
+            */
 
             if (Typed.Length == WORD_LENGTH)
             {
@@ -290,8 +292,8 @@ namespace Mauordle
                 spongebob.Volume = Volume;
             }
             //Shell.Current.DisplayAlert("bogos", FileSystem.Current.AppDataDirectory, "ok");
-            Label test2 = new Label { Text = targetWord };
-            mainVStack.Add(test2);
+            //Label test2 = new Label { Text = targetWord };
+            //mainVStack.Add(test2);
 
         }
 
@@ -438,7 +440,7 @@ namespace Mauordle
         private async Task SaveResults()
         {
             string path = Path.Combine(FileSystem.Current.AppDataDirectory, HISTORY_FILE_NAME);
-            ObservableCollection<Attempt> history = await HistoryPage.LoadHistory();
+            ObservableCollection<Attempt> history = await DesktopHistoryPage.LoadHistory();
 
             Attempt currentAttempt = new Attempt
             {
@@ -549,7 +551,11 @@ namespace Mauordle
 
         private async void OpenHistoryPage(object sender, EventArgs args)
         {
-            await Navigation.PushAsync(new HistoryPage());
+#if (WINDOWS || MACCATALYST)
+            await Navigation.PushAsync(new DesktopHistoryPage());
+#else
+            await Navigation.PushAsync(new MobileHistoryPage());
+#endif
         }
 
         /*
