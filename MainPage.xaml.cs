@@ -495,6 +495,11 @@ namespace Mauordle
             await Navigation.PushAsync(new SettingsPage());
         }
 
+        private async void OpenHistoryPage(object sender, EventArgs args)
+        {
+            await Navigation.PushAsync(new HistoryPage());
+        }
+
         /*
         protected override void OnAppearing()
         {
