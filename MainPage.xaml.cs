@@ -35,6 +35,7 @@ namespace Mauordle
         private double INITIAL_BORDER_WIDTH_MULTIPLIER = 0.08;
         private double INITIAL_ENTRY_WIDTH_MULTIPLIER = 0.3;
         private int WIN_FONT_SIZE = 50;
+        private int LOSS_FONT_SIZE = 30;
 
         //properties
         private Entry entry;
@@ -115,6 +116,7 @@ namespace Mauordle
             INITIAL_BORDER_WIDTH_MULTIPLIER = 0.12;
             INITIAL_ENTRY_WIDTH_MULTIPLIER = 0.15;
             WIN_FONT_SIZE = 90;
+            LOSS_FONT_SIZE = 50;
 #endif
 
             BindingContext = this;
@@ -225,6 +227,7 @@ namespace Mauordle
             {
                 entry.IsEnabled = false;
                 spongebob.Play();
+                ShowWordOnLoss();
             }
         }
 
@@ -408,6 +411,17 @@ namespace Mauordle
             }
 
             return false;
+        }
+
+        private void ShowWordOnLoss()
+        {
+            Label lossLabel = new Label
+            {
+                Text = "The word was: " + targetWord,
+                FontSize = LOSS_FONT_SIZE,
+                HorizontalOptions = LayoutOptions.Center
+            };
+            mainVStack.Insert(0, lossLabel);
         }
 
         private Dictionary<char, int> GetCharOccurrences(string str)
