@@ -15,13 +15,13 @@
                 </Setter>
             </Style>
             <Style x:Key="CorrectBorder" TargetType="Border" BasedOn="{StaticResource DefaultBorder}">
-                <Setter Property="BackgroundColor" Value="#00dd00"/>
+                <Setter Property="BackgroundColor" Value="{StaticResource CorrectColour}"/>
             </Style>
             <Style x:Key="SemiCorrectBorder" TargetType="Border" BasedOn="{StaticResource DefaultBorder}">
-                <Setter Property="BackgroundColor" Value="#ffdd55"/>
+                <Setter Property="BackgroundColor" Value="{StaticResource SemiCorrectColour}"/>
             </Style>
             <Style x:Key="AnimationBorder" TargetType="Border" BasedOn="{StaticResource DefaultBorder}">
-                <Setter Property="BackgroundColor" Value="#ff2222"/>
+                <Setter Property="BackgroundColor" Value="{StaticResource WrongColour}"/>
             </Style>
 
             <Style x:Key="WordLabel" TargetType="Label">

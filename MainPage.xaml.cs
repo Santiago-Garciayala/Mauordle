@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Timers;
 using Plugin.Maui.Audio;
@@ -7,7 +8,7 @@ namespace Mauordle
 {
     /*
      * TODO:
-     * -FIX CROSS PLATFORM SIZING
+     * -FIX CROSS PLATFORM SIZING - DONE
      * 
      * -implement colours DONE
      * -implement light/dark theme
@@ -25,6 +26,7 @@ namespace Mauordle
         public const int WORD_NUMBER = 6;
         public const int WORD_LENGTH = 5;
         private const string WORDS_FILE_NAME = "words.txt";
+        public const string HISTORY_FILE_NAME = "history.json";
         private const string URL = "https://raw.githubusercontent.com/DonH-ITS/jsonfiles/main/words.txt";
         private const int WORDS_FILE_LENGTH = 3103;
 
@@ -208,19 +210,27 @@ namespace Mauordle
 
             Typed = output.ToUpper();
 
+            if(Typed.Length > WORD_LENGTH)
+            {
+                Typed = Typed.Substring(0, WORD_LENGTH);
+            }
+
             if (Typed.Length == WORD_LENGTH)
             {
                 IsUpdatingTyped = true;
 
                 await UpdateWordsDisplay(Typed, guess);
 
-                won = CheckWin(); //CheckWin does its thing inside the method, the return val is just for the sound effect
+                won = await CheckWin(); //CheckWin does its thing inside the method, the return val is just for the sound effect
                 
                 entry.Text = String.Empty;
                 ++guess;
 
                 if(!won && guess != WORD_NUMBER)
                     metalPipeFalling.Play();
+
+                if (won)
+                    await SaveResults();
             }
 
             if (guess >= WORD_NUMBER && !won)
@@ -228,6 +238,7 @@ namespace Mauordle
                 entry.IsEnabled = false;
                 spongebob.Play();
                 ShowWordOnLoss();
+                await SaveResults();
             }
         }
 
@@ -392,7 +403,7 @@ namespace Mauordle
             }
         }
 
-        private bool CheckWin()
+        private async Task<bool> CheckWin()
         {
             if(typed == targetWord)
             {
@@ -422,6 +433,33 @@ namespace Mauordle
                 HorizontalOptions = LayoutOptions.Center
             };
             mainVStack.Insert(0, lossLabel);
+        }
+
+        private async Task SaveResults()
+        {
+            string path = Path.Combine(FileSystem.Current.AppDataDirectory, HISTORY_FILE_NAME);
+            ObservableCollection<Attempt> history = await HistoryPage.LoadHistory();
+
+            Attempt currentAttempt = new Attempt
+            {
+                Success = won,
+                Word = targetWord,
+                Guesses = guess,
+                TimeFinished = DateTime.Now
+            };
+            history.Add(currentAttempt);
+
+            try
+            {
+                using (StreamWriter writer = new StreamWriter(path)) { 
+                    string output = JsonSerializer.Serialize(history);
+                    writer.WriteLine(output);
+                }
+            }
+            catch (Exception ex) {
+                await Shell.Current.DisplayAlert("Failed to save results", ex.Message, "ok");
+            }
+
         }
 
         private Dictionary<char, int> GetCharOccurrences(string str)
